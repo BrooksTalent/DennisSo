@@ -2,6 +2,7 @@ const clients=window.PRIVATE_BIRTHDAYS||[], contacts=window.PRIVATE_CONTACTS||[]
 const birthdayDate=$('birthdayDate'), FLOW_KEY='dennis-workflow-v2';
 let flow={birthdays:{},history:[],defers:{},languages:{},drafts:{}};
 let catchup=false,showCompleted=false;
+birthdayDate.value=day();
 try{const saved=localStorage.getItem(FLOW_KEY);if(saved){const d=JSON.parse(saved);if(!validFlow(d))throw Error();flow=d;}}catch{$('workflowNotice').textContent='未能讀取紀錄，請先檢查瀏覽器儲存或還原備份。';}
 function validFlow(d){return d&&['birthdays','defers','languages','drafts'].every(k=>d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k]))&&Array.isArray(d.history)&&d.history.every(h=>h&&typeof h.id==='string'&&['Plus A','A'].includes(h.group)&&/^\d{4}-\d{2}-\d{2}$/.test(h.date))&&new Set(d.history.map(h=>h.group+h.date)).size===d.history.length;}
 function saveFlow(mutator,rerender=true){const next=JSON.parse(JSON.stringify(flow));mutator(next);try{localStorage.setItem(FLOW_KEY,JSON.stringify(next));flow=next;if(rerender)renderWork();return true;}catch{$('workflowNotice').textContent='儲存失敗，變更未保存。請先備份紀錄。';return false;}}
@@ -45,3 +46,4 @@ function setBirthdayView(value){catchup=value;$('catchupControls').hidden=!value
 $('catchupView').onclick=()=>setBirthdayView(true);$('dailyView').onclick=()=>setBirthdayView(false);
 $('pendingBirthdays').onclick=()=>{showCompleted=false;renderWork();};$('allBirthdays').onclick=()=>{showCompleted=true;renderWork();};
 window.addEventListener('storage',e=>{if(e.key===FLOW_KEY){try{const d=JSON.parse(e.newValue);if(validFlow(d)){flow=d;$('startDate').value=flow.startDate||'2026-10-19';renderWork();}}catch{}}});renderWork();
+
