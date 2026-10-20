@@ -1,4 +1,4 @@
-const clients=window.PRIVATE_BIRTHDAYS||[], contacts=window.PRIVATE_CONTACTS||[];
+let clients=window.PRIVATE_BIRTHDAYS||[], contacts=window.PRIVATE_CONTACTS||[];
 const birthdayDate=$('birthdayDate'), FLOW_KEY='dennis-workflow-v2';
 let flow={birthdays:{},history:[],defers:{},languages:{},drafts:{}};
 let catchup=false,showCompleted=false;
@@ -47,3 +47,4 @@ $('catchupView').onclick=()=>setBirthdayView(true);$('dailyView').onclick=()=>se
 $('pendingBirthdays').onclick=()=>{showCompleted=false;renderWork();};$('allBirthdays').onclick=()=>{showCompleted=true;renderWork();};
 window.addEventListener('storage',e=>{if(e.key===FLOW_KEY){try{const d=JSON.parse(e.newValue);if(validFlow(d)){flow=d;$('startDate').value=flow.startDate||'2026-10-19';renderWork();}}catch{}}});renderWork();
 
+window.addEventListener("directory-ready",()=>{clients=window.PRIVATE_BIRTHDAYS||[];contacts=window.PRIVATE_CONTACTS||[];renderWork();});
