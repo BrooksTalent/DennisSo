@@ -8,7 +8,8 @@ function validFlow(d){return d&&['birthdays','defers','languages','drafts'].ever
 function saveFlow(mutator,rerender=true){const next=JSON.parse(JSON.stringify(flow));mutator(next);try{localStorage.setItem(FLOW_KEY,JSON.stringify(next));flow=next;if(rerender)renderWork();return true;}catch{$('workflowNotice').textContent='儲存失敗，變更未保存。請先備份紀錄。';return false;}}
 function action(text,fn){const b=el('button','whatsapp-button',text);b.type='button';b.onclick=fn;return b;}
 function messageBox(card,c,key,birthday){
- const language=flow.languages[c.id||c.name]||flow.languages[c.name]||WorkflowModel.language(c);
+ const personKey=c.id||c.name;
+ const language=flow.languages[personKey]||flow.languages[c.name]||WorkflowModel.language({...c,phone:flow.phones?.[personKey]??c.phone});
  const label=el('label','language-control','訊息語言　');const select=el('select');for(const [value,text] of [['zh-Hant','繁體 · WhatsApp'],['zh-Hans','简体 · WeChat']]){const o=el('option','',text);o.value=value;select.append(o);}select.value=language;label.append(select);card.append(label,el('small','',flow.languages[c.id||c.name]||flow.languages[c.name]?'已使用你設定的語言':'按電話區號、姓名及已確認資料預設，可自行切換。'));
  const page='https://www.brookstalent.org/Birthday2026/share-dennis-1-'+language+'.html';const url=new URL(page);url.searchParams.set('name',c.nickname);
  const belated=birthday&&Number(birthdayDate.value.slice(5,7))===c.month&&Number(birthdayDate.value.slice(8,10))>c.day;
@@ -18,7 +19,13 @@ function messageBox(card,c,key,birthday){
  select.onchange=()=>saveFlow(s=>{s.drafts[key+'|'+language]=area.value;s.languages[c.id||c.name]=select.value;});
  const note=el('small','phone-status');const actions=el('div','birthday-actions');
  const copy=action(language==='zh-Hans'?'复制讯息 · WeChat':'複製訊息',async()=>{try{await navigator.clipboard.writeText(area.value);note.textContent='已複製，請到對話確認收件人後貼上。';}catch{area.focus();area.select();note.textContent='請複製已選取的文字。';}});actions.append(copy);
- if(language==='zh-Hant'){const phone=WorkflowModel.phone(c);const valid=/^[1-9]\d{6,14}$/.test(phone);const wa=el('a','whatsapp-button',valid?'開啟 WhatsApp 對話':'開啟 WhatsApp · 揀收件人');wa.target='_blank';wa.rel='noreferrer';const update=()=>wa.href='https://wa.me/'+(valid?phone:'')+'?text='+encodeURIComponent(area.value);update();area.oninput=update;actions.append(wa);note.textContent=valid?'請確認收件人後再發送。':'資料庫未有 WhatsApp 號碼，開啟後請選擇收件人。';}else note.textContent='复制后在 WeChat 手动发送；不会自动发送。';
+ if(language==='zh-Hant'){
+ const phoneLabel=el('label','phone-control','WhatsApp 電話（香港可填 8 位；其他地區請連國際區號）');const phoneInput=el('input','birthday-phone');phoneInput.type='tel';phoneInput.autocomplete='off';phoneInput.placeholder='未有電話，請先補填';phoneInput.value=flow.phones?.[personKey]??c.phone??'';phoneInput.setAttribute('aria-label',c.nickname+' 的 WhatsApp 電話');phoneLabel.append(phoneInput);card.append(phoneLabel);
+ const wa=el('a','whatsapp-button','');wa.target='_blank';wa.rel='noreferrer';
+ const savePhone=()=>{const n=WorkflowModel.phone({phone:phoneInput.value});if(phoneInput.value.trim()&&!n){note.textContent='電話格式未完整，請確認號碼及國際區號。';return false;}return saveFlow(s=>{s.phones={...s.phones,[personKey]:n};},false);};
+ function update(){const person={phone:phoneInput.value};const href=WorkflowModel.whatsapp(person,area.value);if(href){wa.href=href;wa.textContent='WhatsApp · '+c.nickname;wa.setAttribute('aria-disabled','false');note.textContent='直接開啟 '+c.nickname+' 的對話 · +'+WorkflowModel.phone(person)+'，並預填上方訊息。';}else{wa.removeAttribute('href');wa.textContent='請先補填電話';wa.setAttribute('aria-disabled','true');note.textContent='未有有效電話，無法直接開啟此人對話。';}}
+ phoneInput.oninput=update;phoneInput.onchange=savePhone;area.oninput=update;wa.onclick=e=>{if(!WorkflowModel.whatsapp({phone:phoneInput.value},area.value)||!savePhone()){e.preventDefault();phoneInput.focus();}};update();actions.append(wa);
+ }else note.textContent='复制后在 WeChat 手动发送；不会自动发送。';
  actions.append(action(language==='zh-Hant'?'一按轉简体 · WeChat':'一按轉繁體 · WhatsApp',()=>saveFlow(s=>{s.drafts[key+'|'+language]=area.value;s.languages[c.id||c.name]=language==='zh-Hant'?'zh-Hans':'zh-Hant';})));
  if(birthday){const preview=el('a','whatsapp-button',language==='zh-Hans'?'预览生日祝福 ↗':'預覽生日祝福 ↗');preview.href=url.href;preview.target='_blank';preview.rel='noreferrer';actions.append(preview);}card.append(actions,note);
 }
