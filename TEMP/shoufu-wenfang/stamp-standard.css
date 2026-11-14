@@ -1,0 +1,46 @@
+/* 守富文房 原子印標準 v1 — 蘇州、北京為核准參考圖。
+   CSS 定義版位與輸出尺寸；城市插畫及客製字形以原 PNG 為準，非可編輯字型。
+   Figma: https://www.figma.com/design/7HZzC4RoGzVXSyFN4GrBhc
+   100mm = 377.952756 CSS px @96dpi。不得以螢幕像素推算製章尺寸。
+   邊框線寬為設計目標，製章廠須試刻確認。 */
+:root {
+  --stamp-ink: #771c22;
+  --stamp-paper: #fff5e7;
+  --stamp-size: 100mm;
+  --stamp-portrait-size: 50mm;
+  --stamp-frame-inset: 1mm;
+  --stamp-frame-outer: .8mm;
+  --stamp-frame-inner: .35mm;
+  --stamp-frame-radius: 9mm;
+  --stamp-title-top: 5.5%;
+  --stamp-title-height: 19%;
+  --stamp-english-top: 24%;
+  --stamp-art-top: 29%;
+  --stamp-art-bottom: 80%;
+  --stamp-footer-top: 80%;
+  --stamp-logo-top: 81.5%;
+  --stamp-logo-left: 35%;
+  --stamp-logo-width: 30%;
+  --stamp-date-top: 92.5%;
+  --stamp-date-font: 3mm;
+  --stamp-rule-width: 5mm;
+  --stamp-rule-weight: .35mm;
+  --stamp-qr-width: 24mm;
+  --stamp-qr-height: 25mm;
+  --stamp-qr-caption: .96mm;
+  --stamp-font: 'SimSun', 'Noto Serif CJK SC', serif;
+}
+.stamp { position: relative; width: var(--stamp-size); height: var(--stamp-size); color: var(--stamp-ink); }
+.stamp__source { display: block; width: 100%; height: 100%; object-fit: contain; }
+.stamp__logo { position: absolute; top: var(--stamp-logo-top); left: var(--stamp-logo-left); width: var(--stamp-logo-width); height: auto; }
+.stamp__date { position: absolute; top: var(--stamp-date-top); left: 50%; transform: translateX(-50%); white-space: nowrap; font: var(--stamp-date-font)/1 var(--stamp-font); }
+.stamp--suzhou { --stamp-date: '2027.03.07'; }
+.stamp--beijing { --stamp-date: '2027.04.24'; }
+.stamp--portrait { width: var(--stamp-portrait-size); height: var(--stamp-portrait-size); border-radius: 50%; }
+.stamp--qr { width: var(--stamp-qr-width); height: var(--stamp-qr-height); background: white; }
+.stamp--qr img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+/* QR: 留足四個空白模組；不得用 logo 遮碼、平滑縮放或鏡像輸出測試圖。
+   正常閱讀方向供核對；製章廠於製版時鏡像。以實物印章再次掃碼驗收。
+   Source PNG: 1254 × 1254 px for 100mm (~318.5dpi).
+   標準版 logo 底框以蘇州、北京原圖輪廓為準；勿用普通矩形替代裝飾框。 */
+@media print { .stamp { break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
